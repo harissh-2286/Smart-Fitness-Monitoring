@@ -1,0 +1,87 @@
+{
+  "model_name": "Smart Fitness Multi-Task ML Engine",
+  "activity_classifier": {
+    "algorithm": "Random Forest",
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "classes": [
+      "Resting",
+      "Running",
+      "Walking"
+    ],
+    "confusion_matrix": [
+      [
+        250,
+        0,
+        0
+      ],
+      [
+        0,
+        250,
+        0
+      ],
+      [
+        0,
+        0,
+        250
+      ]
+    ],
+    "classification_report": {
+      "Resting": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 250.0
+      },
+      "Running": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 250.0
+      },
+      "Walking": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 250.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 750.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 750.0
+      }
+    }
+  },
+  "anomaly_detector": {
+    "algorithm": "Isolation Forest",
+    "contamination": 0.04,
+    "features_evaluated": [
+      "heart_rate",
+      "step_cadence",
+      "accel_magnitude",
+      "speed_kmh"
+    ],
+    "sample_anomaly_test": {
+      "is_anomaly": true,
+      "anomaly_score": -0.0477,
+      "risk_indicator": "Moderate Risk"
+    }
+  },
+  "features": [
+    "heart_rate",
+    "step_cadence",
+    "accel_magnitude",
+    "speed_kmh"
+  ],
+  "clinical_disclaimer": "These machine learning models provide experimental fitness and wellness classification for educational capstone demonstration. They are not intended for clinical diagnostic use."
+}

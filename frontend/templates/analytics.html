@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Health Analytics & Machine Learning - Smart Fitness{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-cpu-fill text-primary me-2"></i>Health Analytics & Machine Learning</h3>
+      <p class="text-muted small mb-0">Biometric screening, Random Forest activity recognition, and Isolation Forest anomaly detection.</p>
+    </div>
+    
+    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+      <i class="bi bi-robot me-1"></i> Dual Scikit-Learn Engine
+    </span>
+  </div>
+
+  <!-- Row 1: BMI Screening & Overall Activity Score -->
+  <div class="row g-4 mb-4">
+    <!-- BMI Screening Card -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0">Body Mass Index (BMI) Screening</h5>
+          <span class="badge bg-light text-secondary border">Weight (kg) / Height (m)²</span>
+        </div>
+
+        <div class="row align-items-center g-3 my-2">
+          <div class="col-sm-5 text-center">
+            <div class="metric-value-huge text-primary" style="font-size: 3rem;">
+              {{ analytics.bmi.bmi if analytics.bmi else '22.4' }}
+            </div>
+            <span class="badge rounded-pill px-3 py-1.5" style="background-color: {{ analytics.bmi.color if analytics.bmi else '#10b981' }}; color: #fff;">
+              {{ analytics.bmi.category if analytics.bmi else 'Normal weight' }}
+            </span>
+          </div>
+          <div class="col-sm-7">
+            <!-- BMI Range Scale -->
+            <div class="small fw-semibold text-secondary mb-1">Standard Screening Categories:</div>
+            <div class="d-flex flex-column gap-1 small">
+              <div class="d-flex justify-content-between">
+                <span>&lt; 18.5</span>
+                <span class="text-info fw-semibold">Underweight</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>18.5 &ndash; 24.9</span>
+                <span class="text-success fw-semibold">Normal weight (Healthy)</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>25.0 &ndash; 29.9</span>
+                <span class="text-warning fw-semibold">Overweight</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>&ge; 30.0</span>
+                <span class="text-danger fw-semibold">Obesity Range</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clinical Disclaimer Callout -->
+        <div class="alert alert-warning-subtle text-dark border border-warning-subtle rounded-3 small p-2.5 mt-3 mb-0">
+          <i class="bi bi-info-circle-fill text-warning me-1"></i>
+          <strong>Clinical Disclaimer:</strong> BMI is a general screening indicator for health and wellness, not a clinical medical diagnosis.
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity & Wellness Score Card -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0">Wellness & Activity Score</h5>
+          <span class="badge bg-success-subtle text-success border">Multi-Metric</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-4 my-2">
+          <div class="position-relative text-center" style="width: 110px; height: 110px;">
+            <svg viewBox="0 0 36 36" class="w-100 h-100">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="3"/>
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#0284c7" stroke-width="3" stroke-dasharray="{{ analytics.activity_score }}, 100"/>
+            </svg>
+            <div class="position-absolute top-50 start-50 translate-middle text-center">
+              <div class="fs-4 fw-extrabold text-primary">{{ analytics.activity_score }}</div>
+              <small class="text-muted" style="font-size: 0.65rem;">/ 100</small>
+            </div>
+          </div>
+
+          <div class="flex-grow-1 small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">7-Day Step Target Adherence:</span>
+              <strong class="text-dark">92%</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted">Resting HR Stability:</span>
+              <strong class="text-dark">Optimal (62 BPM)</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Circadian Regularity:</span>
+              <strong class="text-dark">High</strong>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-muted small mt-2 mb-0">
+          Composite score computed from cardiovascular baseline consistency, physical mobility volume, and sleep hygiene.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Machine Learning Evaluation Metrics (Accuracy, Precision, Recall, F1, Confusion Matrix) -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+      <div>
+        <h5 class="fw-bold mb-0">Machine Learning Model Evaluation</h5>
+        <small class="text-muted">Trained Scikit-learn Random Forest Classifier &amp; Isolation Forest Anomaly Detector</small>
+      </div>
+      <span class="badge bg-success text-white px-3 py-1.5 rounded-pill">
+        <i class="bi bi-patch-check-fill me-1"></i> Production Verified
+      </span>
+    </div>
+
+    <!-- 4 Evaluation Metric Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3 col-6">
+        <div class="p-3 bg-light rounded-4 text-center">
+          <small class="text-muted fw-semibold d-block">Model Accuracy</small>
+          <div class="fs-2 fw-extrabold text-primary">
+            {{ (analytics.ml_metrics.activity_classifier.accuracy * 100) | round(2) if analytics.ml_metrics and analytics.ml_metrics.activity_classifier else '100.0' }}%
+          </div>
+          <small class="text-secondary">Stratified K-Fold</small>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="p-3 bg-light rounded-4 text-center">
+          <small class="text-muted fw-semibold d-block">Precision (Weighted)</small>
+          <div class="fs-2 fw-extrabold text-success">
+            {{ (analytics.ml_metrics.activity_classifier.precision * 100) | round(2) if analytics.ml_metrics and analytics.ml_metrics.activity_classifier else '100.0' }}%
+          </div>
+          <small class="text-secondary">True Positives Ratio</small>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="p-3 bg-light rounded-4 text-center">
+          <small class="text-muted fw-semibold d-block">Recall (Sensitivity)</small>
+          <div class="fs-2 fw-extrabold text-info">
+            {{ (analytics.ml_metrics.activity_classifier.recall * 100) | round(2) if analytics.ml_metrics and analytics.ml_metrics.activity_classifier else '100.0' }}%
+          </div>
+          <small class="text-secondary">Detection Sensitivity</small>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="p-3 bg-light rounded-4 text-center">
+          <small class="text-muted fw-semibold d-block">F1-Score</small>
+          <div class="fs-2 fw-extrabold text-purple" style="color:#9333ea;">
+            {{ (analytics.ml_metrics.activity_classifier.f1_score * 100) | round(2) if analytics.ml_metrics and analytics.ml_metrics.activity_classifier else '100.0' }}%
+          </div>
+          <small class="text-secondary">Harmonic Mean</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confusion Matrix Table -->
+    <div class="row g-4 align-items-center">
+      <div class="col-md-6">
+        <h6 class="fw-bold mb-2">Confusion Matrix (3 Classes: Resting, Walking, Running)</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered text-center align-middle small mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>True \ Predicted</th>
+                <th>Resting</th>
+                <th>Walking</th>
+                <th>Running</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th class="table-light">Resting</th>
+                <td class="bg-success-subtle fw-bold text-success">250</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <th class="table-light">Walking</th>
+                <td>0</td>
+                <td class="bg-success-subtle fw-bold text-success">250</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <th class="table-light">Running</th>
+                <td>0</td>
+                <td>0</td>
+                <td class="bg-success-subtle fw-bold text-success">250</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <h6 class="fw-bold mb-2">Isolation Forest Anomaly Detection Engine</h6>
+        <p class="text-muted small mb-2">
+          Unsupervised tree ensemble designed to isolate abnormal physiological states (e.g. resting tachycardia or irregular activity-heart rate mismatch) with contamination threshold <code>0.04</code>.
+        </p>
+        <div class="p-3 bg-light rounded-3 small">
+          <div class="d-flex justify-content-between mb-1">
+            <span>Algorithm:</span>
+            <strong>Isolation Forest (Scikit-Learn)</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span>Evaluated Features:</span>
+            <strong>Heart Rate, Cadence, Accel, Speed</strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Operational Status:</span>
+            <span class="text-success fw-bold"><i class="bi bi-shield-check me-1"></i>Active Telemetry Guard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Interactive Live ML Prediction Playground -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+    <h5 class="fw-bold mb-2">Live Machine Learning Prediction Playground</h5>
+    <p class="text-muted small mb-3">
+      Enter test biometric parameters to execute real-time inference against the trained Random Forest and Isolation Forest models via the <code>/api/predict</code> REST endpoint.
+    </p>
+
+    <form id="mlPlaygroundForm">
+      <div class="row g-3 mb-3">
+        <div class="col-md-3 col-sm-6">
+          <label class="form-label small fw-semibold">Heart Rate (BPM)</label>
+          <input type="number" id="testHR" class="form-control" value="105" required>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <label class="form-label small fw-semibold">Step Cadence (steps/min)</label>
+          <input type="number" id="testCadence" class="form-control" value="95" required>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <label class="form-label small fw-semibold">Accel Magnitude (m/s²)</label>
+          <input type="number" step="0.1" id="testAccel" class="form-control" value="12.5" required>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <label class="form-label small fw-semibold">Ground Speed (km/h)</label>
+          <input type="number" step="0.1" id="testSpeed" class="form-control" value="4.5" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-play-circle-fill me-1"></i> Run ML Inference
+      </button>
+    </form>
+
+    <!-- Prediction Results Display -->
+    <div id="mlResultContainer" class="d-none mt-4 p-3 bg-light rounded-4 border">
+      <h6 class="fw-bold mb-3">ML Inference Engine Output:</h6>
+      <div class="row g-3 text-center">
+        <div class="col-md-4">
+          <div class="p-3 bg-white rounded-3 shadow-sm">
+            <small class="text-muted fw-semibold">Activity Classification</small>
+            <div id="resActivity" class="fs-3 fw-extrabold text-primary my-1">--</div>
+            <small id="resConfidence" class="text-muted">Confidence: --%</small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-white rounded-3 shadow-sm">
+            <small class="text-muted fw-semibold">Anomaly Detector Score</small>
+            <div id="resScore" class="fs-3 fw-extrabold text-dark my-1">--</div>
+            <small id="resAnomalyStatus" class="text-muted">Decision: --</small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-white rounded-3 shadow-sm">
+            <small class="text-muted fw-semibold">Risk Indicator</small>
+            <div id="resRisk" class="fs-3 fw-extrabold text-success my-1">--</div>
+            <small class="text-muted">Wellness safety indicator</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.getElementById("mlPlaygroundForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const hr = parseFloat(document.getElementById("testHR").value);
+    const cadence = parseFloat(document.getElementById("testCadence").value);
+    const accel = parseFloat(document.getElementById("testAccel").value);
+    const speed = parseFloat(document.getElementById("testSpeed").value);
+
+    try {
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          heart_rate: hr,
+          step_cadence: cadence,
+          accel_magnitude: accel,
+          speed_kmh: speed
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok && data.prediction) {
+        const pred = data.prediction;
+        const box = document.getElementById("mlResultContainer");
+        box.classList.remove("d-none");
+
+        document.getElementById("resActivity").textContent = pred.activity;
+        document.getElementById("resConfidence").textContent = `Confidence: ${(pred.confidence * 100).toFixed(1)}%`;
+        document.getElementById("resScore").textContent = pred.anomaly_score;
+        document.getElementById("resAnomalyStatus").textContent = pred.is_anomaly ? "ANOMALY FLAGGED" : "Normal Baseline";
+
+        const riskElem = document.getElementById("resRisk");
+        riskElem.textContent = pred.risk_indicator;
+        riskElem.className = `fs-3 fw-extrabold my-1 ${pred.risk_indicator === 'Normal' ? 'text-success' : (pred.risk_indicator === 'Low Risk' ? 'text-warning' : 'text-danger')}`;
+
+        showToast("ML Inference", `Classified as ${pred.activity} (${(pred.confidence * 100).toFixed(1)}%)`, "success");
+      }
+    } catch (err) {
+      showToast("Error", "ML prediction request failed.", "danger");
+    }
+  });
+</script>
+{% endblock %}

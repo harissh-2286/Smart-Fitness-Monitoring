@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile & Fitness Goals - Smart Fitness{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-person-circle text-primary me-2"></i>Profile & Goals</h3>
+      <p class="text-muted small mb-0">Manage physiological baselines, daily fitness targets, and export records.</p>
+    </div>
+    
+    <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="exportHealthData()">
+      <i class="bi bi-download me-1"></i> Export Health Records (JSON)
+    </button>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Profile & Anthropometrics Form -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+        <h5 class="fw-bold mb-3">Biometric & Anthropometric Profile</h5>
+
+        <form id="profileForm">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Full Name</label>
+              <input type="text" id="profName" class="form-control" value="{{ user.name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Email Address (Read-only)</label>
+              <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Age</label>
+              <input type="number" id="profAge" class="form-control" value="{{ user.age }}" min="10" max="115" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Height (cm)</label>
+              <input type="number" step="0.1" id="profHeight" class="form-control" value="{{ user.height }}" min="80" max="250" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Weight (kg)</label>
+              <input type="number" step="0.1" id="profWeight" class="form-control" value="{{ user.weight }}" min="25" max="300" required>
+            </div>
+          </div>
+
+          <h6 class="fw-bold mt-4 mb-3 border-top pt-3">Daily Fitness & Wellness Targets</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Daily Steps Goal</label>
+              <input type="number" id="profStepGoal" class="form-control" value="{{ user.step_goal or 10000 }}" min="1000" max="50000">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Daily Calories Goal (kcal)</label>
+              <input type="number" id="profCalorieGoal" class="form-control" value="{{ user.calorie_goal or 1800 }}" min="500" max="10000">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Sleep Goal (Hours)</label>
+              <input type="number" step="0.5" id="profSleepGoal" class="form-control" value="{{ user.sleep_goal or 8.0 }}" min="4" max="12">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-save me-1"></i> Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Security & Data Privacy Card -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white mb-4">
+        <h5 class="fw-bold mb-3">Security & Storage Architecture</h5>
+        <ul class="list-group list-group-flush small">
+          <li class="list-group-item d-flex justify-content-between px-0 py-2.5">
+            <span class="text-muted">Database Engine:</span>
+            <strong class="text-dark">Firebase Firestore Engine</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0 py-2.5">
+            <span class="text-muted">Password Encryption:</span>
+            <strong class="text-dark">Bcrypt (Salt rounds: 12)</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0 py-2.5">
+            <span class="text-muted">Session Management:</span>
+            <strong class="text-dark">JWT (HMAC-SHA256)</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0 py-2.5">
+            <span class="text-muted">User Data Isolation:</span>
+            <span class="badge bg-success-subtle text-success">Active & Isolated</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+        <h5 class="fw-bold mb-2">GDPR / Data Portability</h5>
+        <p class="text-muted small mb-3">
+          Download a complete export of all your encrypted health telemetry records stored in Firebase Firestore.
+        </p>
+        <button class="btn btn-outline-secondary btn-sm rounded-pill w-100" onclick="exportHealthData()">
+          <i class="bi bi-file-earmark-code me-1"></i> Download Personal Health JSON
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.getElementById("profileForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: document.getElementById("profName").value.trim(),
+      age: parseInt(document.getElementById("profAge").value),
+      height: parseFloat(document.getElementById("profHeight").value),
+      weight: parseFloat(document.getElementById("profWeight").value),
+      step_goal: parseInt(document.getElementById("profStepGoal").value),
+      calorie_goal: parseInt(document.getElementById("profCalorieGoal").value),
+      sleep_goal: parseFloat(document.getElementById("profSleepGoal").value)
+    };
+
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Profile Updated", "Your goals and metrics have been saved.", "success");
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        showToast("Error", data.error || "Failed to update profile", "danger");
+      }
+    } catch (e) {
+      showToast("Error", "Server error while saving profile.", "danger");
+    }
+  });
+
+  async function exportHealthData() {
+    showToast("Exporting", "Fetching your health records from Firebase...", "info");
+    try {
+      const res = await fetch("/api/health-data?limit=1000");
+      const data = await res.json();
+      const jsonStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.setAttribute("href", jsonStr);
+      downloadAnchor.setAttribute("download", `smart_fitness_records_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Exported", "Personal health records exported successfully.", "success");
+    } catch (err) {
+      showToast("Error", "Failed to export data.", "danger");
+    }
+  }
+</script>
+{% endblock %}

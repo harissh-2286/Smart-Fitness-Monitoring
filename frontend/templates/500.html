@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Internal Server Error{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+  <div class="card border-0 shadow-card rounded-4 p-5 max-w-500 mx-auto bg-white">
+    <div class="display-1 fw-extrabold text-danger mb-2">500</div>
+    <h4 class="fw-bold mb-2">Internal Server Error</h4>
+    <p class="text-muted small mb-4">An unexpected condition occurred while processing health telemetry.</p>
+    <a href="{{ url_for('health.dashboard_page') }}" class="btn btn-primary rounded-pill px-4">
+      <i class="bi bi-arrow-left me-1"></i> Return to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

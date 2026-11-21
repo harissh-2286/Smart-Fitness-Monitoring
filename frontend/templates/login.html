@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Smart Fitness & Healthcare</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+    .auth-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 440px;
+      padding: 2.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="text-center mb-4">
+      <div class="brand-icon mx-auto mb-2">
+        <i class="bi bi-heart-pulse-fill"></i>
+      </div>
+      <h4 class="fw-bold mb-1">Welcome Back</h4>
+      <p class="text-muted small">Access your smart fitness & health records</p>
+    </div>
+
+    <!-- Alert placeholder -->
+    <div id="loginAlertBox" class="alert d-none py-2 px-3 small rounded-3" role="alert"></div>
+
+    <form id="loginForm">
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Email Address</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+          <input type="email" id="loginEmail" class="form-control border-start-0" placeholder="name@example.com" required value="demo@smartfitness.local">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label small fw-semibold mb-0">Password</label>
+          <a href="/forgot-password" class="small text-muted">Forgot?</a>
+        </div>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+          <input type="password" id="loginPassword" class="form-control border-start-0" placeholder="••••••••" required value="Demo@123456">
+        </div>
+      </div>
+
+      <button type="submit" id="loginSubmitBtn" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold shadow-sm mb-3">
+        <span id="loginBtnText">Sign In</span>
+        <span id="loginBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+      </button>
+
+      <!-- Quick Demo Login Helpers for College Viva -->
+      <div class="border-top pt-3 text-center mb-3">
+        <span class="small text-muted d-block mb-2">Quick Viva Evaluator Logins:</span>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-grow-1 rounded-pill" onclick="fillCredentials('demo@smartfitness.local', 'Demo@123456')">
+            <i class="bi bi-person me-1"></i> Demo User
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-warning text-dark flex-grow-1 rounded-pill" onclick="fillCredentials('admin@smartfitness.local', 'Admin@123456')">
+            <i class="bi bi-shield-lock me-1"></i> Admin
+          </button>
+        </div>
+      </div>
+
+      <div class="text-center small text-muted">
+        Don't have an account? <a href="{{ url_for('auth.register_page') }}" class="fw-semibold text-primary">Create Account</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Password Reset Assistance</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">
+            For academic capstone demonstration purposes, you can use the pre-configured accounts (<code>Demo@123456</code> or <code>Admin@123456</code>) or register a new user anytime.
+          </p>
+          <div class="alert alert-info py-2 px-3 small rounded-3">
+            In live Firebase mode, password resets are dispatched directly via Firebase Authentication email verification.
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-primary rounded-pill w-100" data-bs-dismiss="modal">Got it</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fillCredentials(email, pwd) {
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = pwd;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const alertBox = document.getElementById('loginAlertBox');
+      const btnText = document.getElementById('loginBtnText');
+      const btnSpinner = document.getElementById('loginBtnSpinner');
+      const submitBtn = document.getElementById('loginSubmitBtn');
+
+      alertBox.className = 'alert d-none';
+      btnText.classList.add('d-none');
+      btnSpinner.classList.remove('d-none');
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem('smart_fitness_token', data.token);
+          window.location.href = data.user.role === 'admin' ? '/admin' : '/dashboard';
+        } else {
+          alertBox.className = 'alert alert-danger py-2 px-3 small rounded-3';
+          alertBox.textContent = data.error || 'Invalid credentials.';
+          btnText.classList.remove('d-none');
+          btnSpinner.classList.add('d-none');
+          submitBtn.disabled = false;
+        }
+      } catch (err) {
+        alertBox.className = 'alert alert-danger py-2 px-3 small rounded-3';
+        alertBox.textContent = 'Network or server connection failed.';
+        btnText.classList.remove('d-none');
+        btnSpinner.classList.add('d-none');
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

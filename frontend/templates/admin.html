@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard - Smart Fitness{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Restricted Administrator Dashboard</h3>
+      <p class="text-muted small mb-0">System health monitoring, aggregate statistics, user directories, and alert volume.</p>
+    </div>
+    
+    <span class="badge bg-warning-subtle text-dark border border-warning px-3 py-2 rounded-pill fw-bold">
+      <i class="bi bi-shield-check me-1"></i> Admin Role Active
+    </span>
+  </div>
+
+  <!-- System KPIs -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="health-card p-4 text-center">
+        <small class="text-muted fw-semibold">Total Registered Users</small>
+        <div class="display-5 fw-extrabold text-primary my-1">{{ stats.total_users }}</div>
+        <small class="text-success"><i class="bi bi-arrow-up"></i> Active Cohort</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="health-card p-4 text-center">
+        <small class="text-muted fw-semibold">Health Telemetry Records</small>
+        <div class="display-5 fw-extrabold text-dark my-1">{{ stats.total_records }}</div>
+        <small class="text-muted">Cloud Firestore</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="health-card p-4 text-center">
+        <small class="text-muted fw-semibold">Active Alerts Logged</small>
+        <div class="display-5 fw-extrabold text-danger my-1">{{ stats.active_alerts_count }}</div>
+        <small class="text-danger">Critical: {{ stats.critical_alerts_count }}</small>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="health-card p-4 text-center">
+        <small class="text-muted fw-semibold">Database Engine</small>
+        <div class="fs-4 fw-bold text-teal mt-2 mb-1" style="color:#0d9488;">{{ stats.db_mode }}</div>
+        <small class="text-success"><i class="bi bi-check-circle-fill"></i> Health: {{ stats.status }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Directory Table -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-bold mb-0">User Accounts Directory</h5>
+      <span class="badge bg-primary-subtle text-primary border">{{ users | length }} Total Accounts</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light text-uppercase text-secondary">
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Biometrics</th>
+            <th>Goals</th>
+            <th>Registered At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar" style="width: 32px; height: 32px;">{{ u.name[0] }}</div>
+                <strong>{{ u.name }}</strong>
+              </div>
+            </td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="badge {% if u.role == 'admin' %}bg-warning-subtle text-dark border border-warning{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                {{ u.role }}
+              </span>
+            </td>
+            <td>Age: {{ u.age }}, {{ u.height }}cm, {{ u.weight }}kg</td>
+            <td>{{ "{:,}".format(u.step_goal or 10000) }} steps</td>
+            <td class="text-muted">{{ u.created_at[:10] if u.created_at else '--' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- System Alert Audit Log -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+    <h5 class="fw-bold mb-3">System-wide Health Alert Audit Log</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light text-uppercase text-secondary">
+          <tr>
+            <th>Timestamp</th>
+            <th>User ID</th>
+            <th>Alert Type</th>
+            <th>Severity</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alerts %}
+          <tr>
+            <td class="text-nowrap">{{ a.timestamp[:19].replace('T', ' ') }}</td>
+            <td><code>{{ a.user_id[:8] }}...</code></td>
+            <td class="fw-bold">{{ a.alert_type }}</td>
+            <td>
+              <span class="badge {% if a.severity == 'critical' %}bg-danger{% elif a.severity == 'high' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                {{ a.severity }}
+              </span>
+            </td>
+            <td>
+              {% if a.status == 'active' %}
+              <span class="badge bg-danger-subtle text-danger">Active</span>
+              {% else %}
+              <span class="badge bg-success-subtle text-success">Resolved</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-3">No system alerts recorded.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

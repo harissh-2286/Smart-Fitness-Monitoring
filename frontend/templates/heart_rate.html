@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Heart Rate Monitoring - Smart Fitness & Healthcare{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Heart Rate Monitoring</h3>
+      <p class="text-muted small mb-0">Cardiovascular rhythm telemetry, heart rate variability, and zone distribution.</p>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="simulateTachycardiaAlert()">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i> Test Tachycardia Alert
+      </button>
+      <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#recordHRModal">
+        <i class="bi bi-plus-lg me-1"></i> Log Heart Rate
+      </button>
+    </div>
+  </div>
+
+  <!-- Real-time Pulse Status Banner -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="health-card text-center p-4">
+        <div class="metric-badge badge-heart mb-3">Live Cardiac Telemetry</div>
+        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+          <i class="bi bi-heart-fill pulse-heart text-danger fs-1"></i>
+          <span class="display-3 fw-extrabold text-dark" id="liveBPM">72</span>
+          <span class="fs-5 text-muted fw-bold">BPM</span>
+        </div>
+        <p class="text-muted small mb-0">Rhythm: <strong>Normal Sinus Rhythm</strong></p>
+        <div class="mt-3">
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">
+            <i class="bi bi-check-circle-fill me-1"></i> Signal Quality: 99.2%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="health-card p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0">Heart Rate Trend Analysis</h5>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3">24 Hours</button>
+            <button type="button" class="btn btn-light btn-sm text-secondary rounded-pill px-3" onclick="showToast('Range', '7-Day View', 'info')">7 Days</button>
+            <button type="button" class="btn btn-light btn-sm text-secondary rounded-pill px-3" onclick="showToast('Range', '30-Day View', 'info')">30 Days</button>
+          </div>
+        </div>
+        <div style="height: 220px; position: relative;">
+          <canvas id="heartRateDetailCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Readings Table -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-bold mb-0">Historical Heart Rate Logs</h5>
+      <span class="text-muted small">Showing {{ records | length }} recent readings</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small text-uppercase text-secondary">
+          <tr>
+            <th>Timestamp</th>
+            <th>Reading (BPM)</th>
+            <th>Zone</th>
+            <th>Activity Context</th>
+            <th>Data Source</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody class="small">
+          {% for r in records %}
+          {% if r.heart_rate %}
+          <tr>
+            <td>{{ r.timestamp[:19].replace('T', ' ') }}</td>
+            <td class="fw-bold fs-6">
+              <i class="bi bi-heart-pulse-fill text-danger me-1"></i> {{ r.heart_rate }} BPM
+            </td>
+            <td>
+              {% if r.heart_rate < 100 %}
+              <span class="badge bg-info-subtle text-info border">Resting Zone</span>
+              {% elif r.heart_rate < 130 %}
+              <span class="badge bg-warning-subtle text-warning border">Fat Burn Zone</span>
+              {% elif r.heart_rate < 160 %}
+              <span class="badge bg-success-subtle text-success border">Cardio Zone</span>
+              {% else %}
+              <span class="badge bg-danger-subtle text-danger border">Peak Zone</span>
+              {% endif %}
+            </td>
+            <td>{{ r.activity_type or 'Resting' }}</td>
+            <td><span class="badge bg-light text-dark border">{{ r.data_source }}</span></td>
+            <td>
+              {% if r.heart_rate > 150 and r.activity_type == 'Resting' %}
+              <span class="badge bg-danger text-white"><i class="bi bi-exclamation-circle me-1"></i> Anomaly</span>
+              {% else %}
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check2"></i> Normal</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endif %}
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-3">No heart rate logs available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log Heart Rate -->
+<div class="modal fade" id="recordHRModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Log Manual Heart Rate</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="recordHRForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Heart Rate (BPM)</label>
+            <input type="number" id="manualHR" class="form-control" min="35" max="220" required value="72">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Activity State</label>
+            <select id="manualHRActivity" class="form-select">
+              <option value="Resting" selected>Resting / Sitting</option>
+              <option value="Walking">Walking</option>
+              <option value="Running">Running / Exercise</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4">Save Reading</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const times = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59"];
+    const values = [64, 59, 78, 92, 125, 88, 70];
+    FitnessCharts.renderHeartRateChart("heartRateDetailCanvas", times, values);
+  });
+
+  document.getElementById("recordHRForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const hr = parseFloat(document.getElementById("manualHR").value);
+    const act = document.getElementById("manualHRActivity").value;
+
+    const payload = {
+      heart_rate: hr,
+      activity_type: act,
+      data_source: "manual"
+    };
+
+    const res = await window.mobileSensorManager.transmitReading(payload);
+    if (res && res.record) {
+      showToast("Saved", "Heart rate reading stored successfully.", "success");
+      setTimeout(() => window.location.reload(), 1000);
+    }
+  });
+
+  async function simulateTachycardiaAlert() {
+    const payload = {
+      heart_rate: 165,
+      activity_type: "Resting",
+      data_source: "demo"
+    };
+    showToast("Simulation", "Injecting resting tachycardia anomaly (165 BPM)...", "warning");
+    await window.mobileSensorManager.transmitReading(payload);
+    setTimeout(() => window.location.reload(), 1200);
+  }
+</script>
+{% endblock %}

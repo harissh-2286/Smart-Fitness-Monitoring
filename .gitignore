@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest / Testing artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables & secrets
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Sensitive service account credentials (if added)
+firebase/serviceAccountKey.json
+*.tmp
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store

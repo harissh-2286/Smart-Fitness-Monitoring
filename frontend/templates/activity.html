@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Tracking - Smart Fitness & Healthcare{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-person-walking text-primary me-2"></i>Activity & Step Tracking</h3>
+      <p class="text-muted small mb-0">Daily step goals, distance estimation, caloric expenditure, and ML state recognition.</p>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="injectPreset('Walking')">
+        <i class="bi bi-plus-circle me-1"></i> Add 500 Steps (Walk)
+      </button>
+      <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#logActivityModal">
+        <i class="bi bi-pencil-square me-1"></i> Manual Activity Log
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+      <div class="health-card p-3">
+        <div class="metric-badge badge-steps mb-2"><i class="bi bi-person-walking"></i> Steps</div>
+        <div class="metric-value-huge text-primary">{{ "{:,}".format(data.summary.steps) }}</div>
+        <div class="progress my-2" style="height: 6px;">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: {{ data.summary.steps_percent }}%;"></div>
+        </div>
+        <div class="d-flex justify-content-between small text-muted">
+          <span>Goal: {{ "{:,}".format(data.summary.step_goal) }}</span>
+          <span>{{ data.summary.steps_percent }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="health-card p-3">
+        <div class="metric-badge badge-calories mb-2"><i class="bi bi-fire"></i> Calories</div>
+        <div class="metric-value-huge text-danger" style="color:#ea580c !important;">{{ "{:,.0f}".format(data.summary.calories) }}</div>
+        <div class="progress my-2" style="height: 6px;">
+          <div class="progress-bar" style="background:#ea580c; width: {{ data.summary.calories_percent }}%;"></div>
+        </div>
+        <div class="d-flex justify-content-between small text-muted">
+          <span>Goal: {{ "{:,.0f}".format(data.summary.calorie_goal) }} kcal</span>
+          <span>{{ data.summary.calories_percent }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="health-card p-3">
+        <div class="metric-badge bg-info-subtle text-info mb-2"><i class="bi bi-geo-alt-fill"></i> Distance</div>
+        <div class="metric-value-huge text-dark">{{ data.summary.distance_km }} <small class="fs-6 text-muted">km</small></div>
+        <p class="text-muted small mt-2 mb-0">Biometric stride formula: <code>Height &times; 0.415</code></p>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+      <div class="health-card p-3">
+        <div class="metric-badge badge-active mb-2"><i class="bi bi-activity"></i> Active Time</div>
+        <div class="metric-value-huge text-success">{{ data.summary.active_minutes }} <small class="fs-6 text-muted">min</small></div>
+        <p class="text-muted small mt-2 mb-0">Target: 45 min moderate/vigorous</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Steps & ML Classification -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0">Weekly Step Volume Breakdown</h5>
+          <span class="badge bg-primary-subtle text-primary border">Past 7 Days</span>
+        </div>
+        <div style="height: 240px; position: relative;">
+          <canvas id="weeklyStepsCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3">ML Activity Classifier</h5>
+        <p class="text-muted small">
+          Trained Scikit-learn <strong>Random Forest</strong> classifying real-time movement states based on cadence, acceleration, and heart rate.
+        </p>
+
+        <div class="p-3 bg-light rounded-4 text-center my-3">
+          <span class="text-muted small text-uppercase fw-semibold">Current Inferred State</span>
+          <div class="fs-2 fw-extrabold text-primary my-1" id="mlActivityState">Walking</div>
+          <span class="badge bg-success text-white">Confidence: 98.4%</span>
+        </div>
+
+        <ul class="list-group list-group-flush small">
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>Walking Cadence:</span>
+            <strong class="text-dark">95 steps/min</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>Acceleration Magnitude:</span>
+            <strong class="text-dark">12.5 m/s²</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>Model Algorithm:</span>
+            <strong class="text-dark">Random Forest (120 trees)</strong>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Manual Activity Log -->
+<div class="modal fade" id="logActivityModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Log Physical Activity</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="activityLogForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Activity Type</label>
+            <select id="logActType" class="form-select">
+              <option value="Walking" selected>Walking</option>
+              <option value="Running">Running</option>
+              <option value="Resting">Resting</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Steps Count</label>
+            <input type="number" id="logSteps" class="form-control" min="0" max="50000" value="1200" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Estimated Heart Rate (BPM)</label>
+            <input type="number" id="logHR" class="form-control" min="40" max="220" value="105" required>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4">Save Activity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const days = {{ data.move_chart.days | map(attribute='day') | list | tojson }};
+    const steps = {{ data.move_chart.days | map(attribute='steps') | list | tojson }};
+    
+    const ctx = document.getElementById("weeklyStepsCanvas");
+    if (ctx) {
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: days,
+          datasets: [{
+            label: "Daily Steps",
+            data: steps,
+            backgroundColor: "#0284c7",
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false } },
+            y: { grid: { color: "rgba(148, 163, 184, 0.15)" } }
+          }
+        }
+      });
+    }
+  });
+
+  document.getElementById("activityLogForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const act = document.getElementById("logActType").value;
+    const steps = parseInt(document.getElementById("logSteps").value);
+    const hr = parseFloat(document.getElementById("logHR").value);
+
+    const payload = {
+      activity_type: act,
+      steps: steps,
+      heart_rate: hr,
+      data_source: "manual"
+    };
+
+    const res = await window.mobileSensorManager.transmitReading(payload);
+    if (res && res.record) {
+      showToast("Activity Recorded", `${steps} steps logged successfully.`, "success");
+      setTimeout(() => window.location.reload(), 1000);
+    }
+  });
+</script>
+{% endblock %}

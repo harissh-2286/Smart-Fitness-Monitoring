@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Fitness & Healthcare Monitoring | IoT & ML Framework</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <style>
+    .hero-section {
+      background: linear-gradient(135deg, #0f172a 0%, #0369a1 100%);
+      color: #fff;
+      padding: 6rem 0 5rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: var(--transition);
+      height: 100%;
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
+    .module-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-full);
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero-section text-center text-lg-start">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-white bg-opacity-10 text-white mb-3">
+            <i class="bi bi-mortarboard-fill text-warning"></i>
+            <span class="small fw-semibold">College Capstone Project Demonstration</span>
+          </div>
+          <h1 class="display-4 fw-extrabold mb-3">
+            A Mobile Computing Framework for <span class="text-info">Smart Fitness</span> & Healthcare
+          </h1>
+          <p class="lead text-white-50 mb-4">
+            An intelligent full-stack IoT and mobile healthcare platform integrating wearable sensing, 
+            Google Firebase Firestore cloud persistence, Scikit-learn Machine Learning (Random Forest activity 
+            classification & Isolation Forest anomaly detection), and automated multi-channel emergency notification.
+          </p>
+          <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+            {% if user %}
+            <a href="{{ url_for('health.dashboard_page') }}" class="btn btn-primary btn-lg px-4 rounded-pill shadow">
+              <i class="bi bi-speedometer2 me-2"></i> Open Dashboard
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login_page') }}" class="btn btn-primary btn-lg px-4 rounded-pill shadow">
+              <i class="bi bi-box-arrow-in-right me-2"></i> Get Started / Login
+            </a>
+            <a href="{{ url_for('auth.register_page') }}" class="btn btn-outline-light btn-lg px-4 rounded-pill">
+              <i class="bi bi-person-plus me-2"></i> Register New User
+            </a>
+            {% endif %}
+            <a href="/api/docs" class="btn btn-link text-white-50 text-decoration-none d-flex align-items-center gap-1" target="_blank">
+              <i class="bi bi-code-slash"></i> API Docs
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card bg-white text-dark shadow-2xl rounded-4 p-4 border-0">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+              <div class="d-flex align-items-center gap-2">
+                <div class="brand-icon" style="width: 32px; height: 32px; font-size: 1rem;">
+                  <i class="bi bi-heart-pulse-fill"></i>
+                </div>
+                <span class="fw-bold">Live Sensor Telemetry Preview</span>
+              </div>
+              <span class="badge bg-success-subtle text-success border border-success-subtle">
+                <i class="bi bi-broadcast"></i> Active
+              </span>
+            </div>
+
+            <div class="row g-3 text-center mb-3">
+              <div class="col-6">
+                <div class="p-3 bg-light rounded-3">
+                  <div class="text-danger fs-3 fw-bold pulse-heart"><i class="bi bi-heart-fill"></i> 72</div>
+                  <small class="text-muted fw-semibold">Heart Rate (BPM)</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 bg-light rounded-3">
+                  <div class="text-primary fs-3 fw-bold">7,530</div>
+                  <small class="text-muted fw-semibold">Daily Steps</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-light rounded-3 mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="fw-semibold">ML Activity Classification:</span>
+                <span class="badge bg-primary text-white">Walking (98.4%)</span>
+              </div>
+              <div class="d-flex justify-content-between small">
+                <span class="fw-semibold">Physiological Risk:</span>
+                <span class="badge bg-success text-white">Normal Baseline</span>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <a href="{{ url_for('auth.login_page') }}" class="btn btn-sm btn-outline-primary rounded-pill w-100">
+                Sign in to View Interactive Controls
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Three Core Modules Showcase -->
+  <section class="py-5 bg-light">
+    <div class="container py-4">
+      <div class="text-center max-w-700 mx-auto mb-5">
+        <h2 class="fw-bold">Architectural Framework: Three Core Modules</h2>
+        <p class="text-muted">Engineered according to modern distributed healthcare systems architecture.</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Module 1 -->
+        <div class="col-md-4">
+          <div class="feature-card">
+            <span class="module-badge bg-primary-subtle text-primary border border-primary-subtle">Module 1</span>
+            <h4 class="fw-bold mb-3">Mobile Sensing & User Interface</h4>
+            <p class="text-muted small">
+              Collects vital biometrics (heart rate, step cadence, calories burned, sleep metrics) via HTML5 Web Sensors & 
+              wearable endpoints with interactive Apple Health-style dashboards.
+            </p>
+            <ul class="list-unstyled small text-secondary mt-3">
+              <li><i class="bi bi-check2 text-success me-2"></i> Real-time Heart Rate & Zones</li>
+              <li><i class="bi bi-check2 text-success me-2"></i> Step Count & Distance Estimation</li>
+              <li><i class="bi bi-check2 text-success me-2"></i> Sleep Stages & Quality Score</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Module 2 -->
+        <div class="col-md-4">
+          <div class="feature-card">
+            <span class="module-badge bg-teal-subtle text-teal border border-teal-subtle" style="background:#ccfbf1; color:#0d9488;">Module 2</span>
+            <h4 class="fw-bold mb-3">Cloud Storage & Analytics</h4>
+            <p class="text-muted small">
+              Secures biometric records in Firebase Firestore with user-level isolation. Calculates BMI with clinical disclaimers, 
+              tracks 7-day Move trends, and executes dual Scikit-learn ML models.
+            </p>
+            <ul class="list-unstyled small text-secondary mt-3">
+              <li><i class="bi bi-check2 text-success me-2"></i> Dual-Mode Firebase Firestore</li>
+              <li><i class="bi bi-check2 text-success me-2"></i> Random Forest Activity Recognition</li>
+              <li><i class="bi bi-check2 text-success me-2"></i> Isolation Forest Anomaly Detection</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Module 3 -->
+        <div class="col-md-4">
+          <div class="feature-card">
+            <span class="module-badge bg-danger-subtle text-danger border border-danger-subtle">Module 3</span>
+            <h4 class="fw-bold mb-3">Health Alerts & Emergency Notification</h4>
+            <p class="text-muted small">
+              Automated rule engine detects tachycardia, bradycardia, severe sleep deficits, and ML-flagged anomalies. 
+              Dispatches multi-channel alerts (Push, SMTP Email, Twilio SMS) to emergency contacts.
+            </p>
+            <ul class="list-unstyled small text-secondary mt-3">
+              <li><i class="bi bi-check2 text-success me-2"></i> Intelligent 15-min Debounce Logic</li>
+              <li><i class="bi bi-check2 text-success me-2"></i> Multi-Contact Escalation Protocol</li>
+              <li><i class="bi bi-check2 text-success me-2"></i> Test Emergency Mode for viva demos</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-4 bg-white border-top text-center text-muted small">
+    <div class="container">
+      <p class="mb-1"><strong>Smart Fitness & Healthcare Mobile Computing Framework</strong></p>
+      <p class="mb-0 text-secondary">College Capstone Project Demonstration &bull; Powered by Flask, Firebase & Scikit-Learn</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+/* ==============================================================
+   SMART FITNESS & HEALTHCARE DESIGN SYSTEM
+   Modern Apple Health / Minimalist Clinical Aesthetic
+   ============================================================== */
+
+:root {
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+  /* Primary Healthcare Palette */
+  --primary-blue: #0284c7;
+  --primary-blue-hover: #0369a1;
+  --primary-teal: #0d9488;
+  --primary-teal-light: #ccfbf1;
+  
+  /* Fitness Accent Colors (Matching Reference Image) */
+  --ring-steps: #0284c7;     /* Vibrant Blue */
+  --ring-calories: #ea580c;  /* Warm Orange */
+  --ring-active: #16a34a;    /* Vivid Green */
+  --ring-heart: #e11d48;     /* Heart Crimson */
+  --ring-purple: #9333ea;    /* Sleep Purple */
+
+  /* Heart Rate Zones */
+  --zone-rest: #38bdf8;
+  --zone-fatburn: #f97316;
+  --zone-cardio: #22c55e;
+  --zone-peak: #f43f5e;
+
+  /* Surfaces & Backgrounds - Light Mode */
+  --bg-app: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --border-color: #e2e8f0;
+  
+  /* Typography Colors */
+  --text-main: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.02);
+  --shadow-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+  
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  --bg-app: #090d16;
+  --bg-sidebar: #0f172a;
+  --bg-card: #131c31;
+  --bg-subtle: #1e293b;
+  --border-color: #1e293b;
+  
+  --text-main: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary-blue);
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--primary-blue-hover);
+}

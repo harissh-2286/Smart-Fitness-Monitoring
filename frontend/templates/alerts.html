@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Health Alerts - Smart Fitness & Healthcare{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-bell-fill text-danger me-2"></i>Health Alerts & Intelligent Safety</h3>
+      <p class="text-muted small mb-0">Multi-channel alert dispatch, threshold evaluation, and emergency contact escalations.</p>
+    </div>
+    
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-warning btn-sm rounded-pill text-dark" onclick="triggerTestAlert('INACTIVITY_REMINDER', 'You have been sedentary for over 2 hours. Take a 5-minute walking break.', 'medium')">
+        <i class="bi bi-person-standing me-1"></i> Inactivity Alert
+      </button>
+      <button class="btn btn-danger btn-sm rounded-pill" onclick="triggerTestAlert('CRITICAL_CARDIAC_SPIKE', 'Severe heart rate spike detected (188 BPM) exceeding peak aerobic limits.', 'critical')">
+        <i class="bi bi-shield-exclamation me-1"></i> Trigger Critical Alert
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Metrics Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="health-card p-3 text-center">
+        <small class="text-muted fw-semibold">Total Alerts Logged</small>
+        <div class="fs-2 fw-extrabold text-dark">{{ alerts | length }}</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="health-card p-3 text-center">
+        <small class="text-muted fw-semibold">Active Alerts</small>
+        <div class="fs-2 fw-extrabold text-danger">
+          {{ alerts | selectattr('status', 'equalto', 'active') | list | length }}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="health-card p-3 text-center">
+        <small class="text-muted fw-semibold">Critical Priority</small>
+        <div class="fs-2 fw-extrabold text-warning">
+          {{ alerts | selectattr('severity', 'equalto', 'critical') | list | length }}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="health-card p-3 text-center">
+        <small class="text-muted fw-semibold">Debounce Window</small>
+        <div class="fs-2 fw-extrabold text-info">15 <small class="fs-6">min</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts Table -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="fw-bold mb-0">Alert History & Delivery Status</h5>
+      <span class="text-muted small">Updated in real-time</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light text-uppercase text-secondary">
+          <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Message</th>
+            <th>Severity</th>
+            <th>Channels</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alerts %}
+          <tr>
+            <td class="text-nowrap">{{ a.timestamp[:19].replace('T', ' ') }}</td>
+            <td class="fw-bold">{{ a.alert_type.replace('_', ' ') }}</td>
+            <td>{{ a.message }}</td>
+            <td>
+              {% if a.severity == 'critical' %}
+              <span class="badge bg-danger text-white">CRITICAL</span>
+              {% elif a.severity == 'high' %}
+              <span class="badge bg-warning text-dark">HIGH</span>
+              {% elif a.severity == 'medium' %}
+              <span class="badge bg-info-subtle text-info border">MEDIUM</span>
+              {% else %}
+              <span class="badge bg-light text-secondary border">INFO</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border me-1"><i class="bi bi-broadcast"></i> Push</span>
+              {% if a.severity in ['high', 'critical'] %}
+              <span class="badge bg-light text-dark border me-1"><i class="bi bi-envelope"></i> Email</span>
+              {% endif %}
+              {% if a.severity == 'critical' %}
+              <span class="badge bg-light text-danger border"><i class="bi bi-chat-text"></i> SMS</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if a.status == 'active' %}
+              <span class="badge bg-danger-subtle text-danger"><i class="bi bi-record-circle me-1"></i> Active</span>
+              {% else %}
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-check2-circle me-1"></i> Resolved</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if a.status == 'active' %}
+              <button class="btn btn-sm btn-outline-success rounded-pill py-0 px-2" onclick="resolveAlert('{{ a.alert_id }}')">
+                Resolve
+              </button>
+              {% else %}
+              <span class="text-muted">Closed</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No health alerts recorded. All biometric indicators are normal.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  async function triggerTestAlert(type, msg, sev) {
+    try {
+      const res = await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          alert_type: type,
+          message: msg,
+          severity: sev,
+          is_test: true
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Alert Generated", data.message, sev === "critical" ? "critical" : "warning");
+        setTimeout(() => window.location.reload(), 1200);
+      }
+    } catch (e) {
+      showToast("Error", "Failed to trigger alert", "danger");
+    }
+  }
+
+  async function resolveAlert(alertId) {
+    try {
+      const res = await fetch(`/api/alerts/${alertId}/resolve`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" }
+      });
+      if (res.ok) {
+        showToast("Resolved", "Alert marked as resolved.", "success");
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    } catch (e) {
+      showToast("Error", "Failed to resolve alert", "danger");
+    }
+  }
+</script>
+{% endblock %}

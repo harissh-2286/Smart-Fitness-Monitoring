@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Sleep Monitoring - Smart Fitness & Healthcare{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-moon-stars-fill text-purple me-2" style="color:#9333ea;"></i>Sleep Telemetry & Circadian Rhythm</h3>
+      <p class="text-muted small mb-0">Nocturnal recovery tracking, sleep architecture analysis, and stage distribution.</p>
+    </div>
+    
+    <div>
+      <button class="btn btn-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#logSleepModal">
+        <i class="bi bi-plus-lg me-1"></i> Log Sleep Session
+      </button>
+    </div>
+  </div>
+
+  <!-- Sleep Summary Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="health-card text-center p-4">
+        <div class="metric-badge badge-sleep mb-3">Nocturnal Duration</div>
+        <div class="display-3 fw-extrabold text-dark mb-1">
+          {{ data.summary.sleep_hours if data else '7.5' }} <small class="fs-4 text-muted">hrs</small>
+        </div>
+        <div class="text-muted small mb-3">Goal: 8.0 hrs ({{ ((data.summary.sleep_hours if data else 7.5) / 8.0 * 100) | round | int }}%)</div>
+        <div class="progress" style="height: 8px;">
+          <div class="progress-bar" style="background:#9333ea; width: {{ ((data.summary.sleep_hours if data else 7.5) / 8.0 * 100) | min(100) }}%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="health-card text-center p-4">
+        <div class="metric-badge bg-success-subtle text-success mb-3">Sleep Quality Index</div>
+        <div class="display-3 fw-extrabold text-success mb-1">88<small class="fs-4 text-muted">/100</small></div>
+        <p class="text-muted small mb-2">Restorative Sleep: <strong>Optimal</strong></p>
+        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">
+          <i class="bi bi-check-circle-fill me-1"></i> Circadian Consistency High
+        </span>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="health-card text-center p-4">
+        <div class="metric-badge bg-info-subtle text-info mb-3">Resting Heart Rate in Sleep</div>
+        <div class="display-3 fw-extrabold text-info mb-1">58 <small class="fs-4 text-muted">bpm</small></div>
+        <p class="text-muted small mb-0">Nocturnal Dip: <strong>-14%</strong> (Healthy dipping pattern)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sleep Stages Chart & Breakdown -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3">Hypnogram Stage Distribution</h5>
+        <div style="height: 240px; position: relative;">
+          <canvas id="sleepStagesCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-card rounded-4 p-4 bg-white h-100">
+        <h5 class="fw-bold mb-3">Sleep Architecture Metrics</h5>
+        <ul class="list-group list-group-flush small">
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+            <div>
+              <strong class="d-block text-primary"><i class="bi bi-circle-fill me-2" style="color:#3b82f6;"></i>Deep Sleep (N3)</strong>
+              <small class="text-muted">Cellular repair, growth hormone release, physical recovery.</small>
+            </div>
+            <span class="fs-6 fw-bold">1h 45m (23%)</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+            <div>
+              <strong class="d-block" style="color:#8b5cf6;"><i class="bi bi-circle-fill me-2"></i>REM Sleep</strong>
+              <small class="text-muted">Memory consolidation, neural plasticity, emotional regulation.</small>
+            </div>
+            <span class="fs-6 fw-bold">1h 50m (24%)</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+            <div>
+              <strong class="d-block text-info"><i class="bi bi-circle-fill me-2" style="color:#06b6d4;"></i>Light Sleep (N1 & N2)</strong>
+              <small class="text-muted">Baseline physiological transition and maintenance.</small>
+            </div>
+            <span class="fs-6 fw-bold">3h 35m (48%)</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+            <div>
+              <strong class="d-block text-warning"><i class="bi bi-circle-fill me-2" style="color:#f97316;"></i>Awake Periods</strong>
+              <small class="text-muted">Micro-arousals during sleep cycle transitions.</small>
+            </div>
+            <span class="fs-6 fw-bold">20m (5%)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sleep History Table -->
+  <div class="card border-0 shadow-card rounded-4 p-4 bg-white">
+    <h5 class="fw-bold mb-3">Sleep Log History</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light text-uppercase text-secondary">
+          <tr>
+            <th>Date</th>
+            <th>Duration</th>
+            <th>Quality</th>
+            <th>Source</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td>{{ r.timestamp[:10] }}</td>
+            <td class="fw-bold">{{ r.sleep_hours }} hrs</td>
+            <td>
+              {% if r.sleep_hours >= 7.0 %}
+              <span class="badge bg-success-subtle text-success">Optimal</span>
+              {% elif r.sleep_hours >= 6.0 %}
+              <span class="badge bg-warning-subtle text-warning">Fair</span>
+              {% else %}
+              <span class="badge bg-danger-subtle text-danger">Deficit</span>
+              {% endif %}
+            </td>
+            <td><span class="badge bg-light text-dark border">{{ r.data_source }}</span></td>
+            <td class="text-muted">Circadian regular log</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-3">No sleep sessions recorded yet. Use the button above to log sleep.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log Sleep -->
+<div class="modal fade" id="logSleepModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Log Sleep Session</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="sleepLogForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Sleep Duration (Hours)</label>
+            <input type="number" step="0.1" id="sleepHoursInput" class="form-control" min="1.0" max="18.0" value="7.5" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Average Resting HR during Sleep (BPM)</label>
+            <input type="number" id="sleepHRInput" class="form-control" min="40" max="120" value="58">
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4">Save Sleep Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    FitnessCharts.renderSleepStagesChart("sleepStagesCanvas", 1.75, 1.83, 3.58, 0.33);
+  });
+
+  document.getElementById("sleepLogForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const hours = parseFloat(document.getElementById("sleepHoursInput").value);
+    const hr = parseFloat(document.getElementById("sleepHRInput").value);
+
+    const payload = {
+      sleep_hours: hours,
+      heart_rate: hr,
+      activity_type: "Resting",
+      data_source: "manual"
+    };
+
+    const res = await window.mobileSensorManager.transmitReading(payload);
+    if (res && res.record) {
+      showToast("Sleep Recorded", `${hours} hours of sleep logged successfully.`, "success");
+      setTimeout(() => window.location.reload(), 1000);
+    }
+  });
+</script>
+{% endblock %}
